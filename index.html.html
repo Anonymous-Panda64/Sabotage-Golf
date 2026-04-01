@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sabotage Golf</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap');
+
+:root {
+  --grass-deep: #1e3d14;
+  --grass: #2d5a20;
+  --fairway: #4a9e3f;
+  --fairway-light: #5cb84f;
+  --rough: #245518;
+  --water: #2a7aaa;
+  --water-light: #3a8fbf;
+  --sand: #d4b870;
+  --gold: #f0c040;
+  --gold-dark: #c09010;
+  --red: #e84040;
+  --blue: #3a8fdf;
+  --green-ui: #40c060;
+  --ui-bg: #0a140a;
+  --ui-panel: rgba(12,22,10,0.96);
+  --ui-border: rgba(90,180,70,0.22);
+  --ui-border-bright: rgba(90,180,70,0.5);
+  --text: #edf0e8;
+  --text-dim: rgba(200,230,180,0.5);
+  --text-muted: rgba(200,230,180,0.3);
+  --p1: #e84040; --p2: #3a8fdf; --p3: #f0a020; --p4: #9060e0;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--ui-bg); }
+body { font-family: 'DM Sans', sans-serif; color: var(--text); touch-action: none; user-select: none; }
+
+/* ── SCREENS ─────────────────────────────────────── */
+.screen { display: none; position: absolute; inset: 0; }
+.screen.active { display: flex; }
+
+/* ── HOME ────────────────────────────────────────── */
+#homeScreen {
+  background: radial-gradient(ellipse at 40% 20%, #1e3d14 0%, #080e06 70%);
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.home-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px 56px;
+  position: relative;
+  overflow: hidden;
+}
+.home-left::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--ui-border) 30%, var(--ui-border) 70%, transparent);
+}
+
+.home-grass-art {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 180px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.home-right {
+  width: 380px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 36px;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.logo-eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.logo-title {
+  font-family: 'Fredoka', cursive;
+  font-size: clamp(3.5rem, 6vw, 5.5rem);
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 0.95;
+  letter-spacing: 1px;
+  text-shadow: 3px 5px 0 rgba(0,0,0,0.4), 0 0 60px rgba(240,192,64,0.2);
+  margin-bottom: 12px;
+}
+.logo-sub {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+.home-taglines { display: flex; flex-direction: column; gap: 8px; }
+.home-tagline {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.82rem; color: var(--text-dim);
+}
+.home-tagline::before {
+  content: '⛳';
+  font-size: 0.9rem;
+  opacity: 0.6;
+}
+
+/* ── PANELS (right side cards) ─────────────────── */
+.panel {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--ui-border);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.panel.hidden { display: none; }
+.panel-title {
+  font-family: 'Fredoka', cursive;
+  font-size: 1rem;
+  color: var(--gold);
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--ui-border);
+  padding-bottom: 10px;
+  margin-bottom: 2px;
+}
+
+/* ── INPUTS ──────────────────────────────────────── */
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field-label {
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.input {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.input:focus { border-color: var(--ui-border-bright); }
+.input::placeholder { color: var(--text-muted); }
+.input-code {
+  font-family: 'Fredoka', cursive;
+  font-size: 1.6rem;
+  letter-spacing: 8px;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--gold);
+  border-color: rgba(240,192,64,0.25);
+}
+.input-code:focus { border-color: rgba(240,192,64,0.6); }
+
+/* ── BUTTONS ─────────────────────────────────────── */
+.btn {
+  font-family: 'Fredoka', cursive;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  padding: 11px 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  white-space: nowrap;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: linear-gradient(135deg, #5cb84f 0%, #3a8a30 100%);
+  color: #fff;
+  box-shadow: 0 4px 0 #2a6020, 0 6px 18px rgba(60,180,50,0.25);
+}
+.btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; filter: none; }
+.btn-secondary {
+  background: rgba(255,255,255,0.06);
+  color: var(--text-dim);
+  border: 1px solid var(--ui-border);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+.btn-gold {
+  background: linear-gradient(135deg, #f0c040 0%, #c09010 100%);
+  color: #1a1208;
+  box-shadow: 0 4px 0 #907010;
+  font-weight: 700;
+}
+.btn-gold:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.btn-danger {
+  background: rgba(232,64,64,0.12);
+  color: #e84040;
+  border: 1px solid rgba(232,64,64,0.25);
+}
+.btn-danger:hover { background: rgba(232,64,64,0.2); }
+.btn-sm { font-size: 0.78rem; padding: 7px 14px; border-radius: 7px; }
+.btn-full { width: 100%; }
+
+/* ── CODE DISPLAY ────────────────────────────────── */
+.code-display {
+  font-family: 'Fredoka', cursive;
+  font-size: 2.2rem;
+  letter-spacing: 10px;
+  color: var(--gold);
+  text-align: center;
+  background: rgba(240,192,64,0.07);
+  border: 1.5px solid rgba(240,192,64,0.25);
+  border-radius: 10px;
+  padding: 14px;
+}
+.status-msg {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  font-style: italic;
+  min-height: 18px;
+}
+.status-msg.ok { color: #5cb84f; font-style: normal; }
+.status-msg.err { color: #e84040; font-style: normal; }
+
+.player-list { display: flex; flex-direction: column; gap: 5px; }
+.player-entry {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--ui-border);
+  border-radius: 7px;
+  font-size: 0.85rem; font-weight: 500;
+}
+.p-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.p-host-tag { margin-left: auto; font-size: 0.65rem; color: var(--text-muted); letter-spacing: 1px; }
+
+.divider { height: 1px; background: var(--ui-border); margin: 2px 0; }
+
+/* ── GALLERY ─────────────────────────────────────── */
+#galleryScreen {
+  flex-direction: column;
+  background: var(--ui-bg);
+}
+.gallery-header {
+  background: rgba(0,0,0,0.4);
+  border-bottom: 1px solid var(--ui-border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.gallery-title {
+  font-family: 'Fredoka', cursive;
+  font-size: 1.3rem;
+  color: var(--gold);
+}
+.gallery-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  align-content: start;
+}
+.course-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--ui-border);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.course-card:hover { border-color: var(--ui-border-bright); transform: translateY(-2px); background: rgba(255,255,255,0.05); }
+.course-canvas-preview { width: 100%; height: 150px; display: block; background: var(--grass); }
+.course-card-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.course-card-name { font-family: 'Fredoka', cursive; font-size: 1.05rem; color: var(--gold); }
+.course-card-meta { font-size: 0.72rem; color: var(--text-muted); display: flex; gap: 10px; }
+.course-card-actions { display: flex; gap: 6px; margin-top: 4px; }
+.gallery-empty { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 0.9rem; }
+
+/* ── CREATOR ─────────────────────────────────────── */
+#creatorScreen {
+  flex-direction: column;
+  background: var(--ui-bg);
+}
+.creator-header {
+  background: rgba(0,0,0,0.5);
+  border-bottom: 1px solid var(--ui-border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.creator-title {
+  font-family: 'Fredoka', cursive;
+  font-size: 1rem;
+  color: var(--gold);
+  margin-right: 4px;
+}
+.creator-name-input {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--ui-border);
+  border-radius: 7px;
+  padding: 6px 10px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  outline: none;
+  width: 160px;
+}
+.tool-bar {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex: 1;
+  flex-wrap: wrap;
+}
+.tool-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 9px;
+  border-radius: 7px;
+  border: 1.5px solid var(--ui-border);
+  background: rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: all 0.13s;
+  font-size: 1.1rem;
+  min-width: 48px;
+}
+.tool-btn span {
+  font-size: 0.55rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+}
+.tool-btn:hover { border-color: rgba(240,192,64,0.4); background: rgba(240,192,64,0.06); }
+.tool-btn.active { border-color: var(--gold); background: rgba(240,192,64,0.12); }
+.tool-btn.active span { color: var(--gold); }
+.tool-sep { width: 1px; height: 36px; background: var(--ui-border); margin: 0 3px; }
+.creator-canvas-wrap { flex: 1; position: relative; overflow: hidden; }
+#creatorCanvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+/* ── GAME ────────────────────────────────────────── */
+#gameScreen { flex-direction: column; }
+.top-hud {
+  height: 50px;
+  background: rgba(4,8,3,0.97);
+  border-bottom: 1px solid var(--ui-border);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 12px;
+  flex-shrink: 0;
+  z-index: 50;
+}
+.hud-logo {
+  font-family: 'Fredoka', cursive;
+  font-size: 1rem;
+  color: var(--gold);
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.hud-center { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.hud-hole { font-family: 'Fredoka', cursive; font-size: 0.85rem; color: rgba(200,230,180,0.7); }
+.hud-phase { font-size: 0.62rem; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
+.hud-scores { display: flex; gap: 6px; }
+.score-pill {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 18px;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  font-size: 0.72rem; font-weight: 600;
+}
+.score-pill.mine { border-color: rgba(240,192,64,0.35); background: rgba(240,192,64,0.08); }
+.score-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.score-num { font-family: 'Fredoka', cursive; font-size: 0.88rem; }
+
+.game-canvas-wrap { flex: 1; position: relative; overflow: hidden; }
+#gameCanvas { display: block; width: 100%; height: 100%; }
+
+.bottom-hud {
+  height: 68px;
+  background: rgba(4,8,3,0.97);
+  border-top: 1px solid var(--ui-border);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 10px;
+  flex-shrink: 0;
+  z-index: 50;
+}
+.turn-block { display: flex; align-items: center; gap: 8px; min-width: 130px; }
+.turn-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 8px currentColor; }
+.turn-info { display: flex; flex-direction: column; }
+.turn-name { font-family: 'Fredoka', cursive; font-size: 0.9rem; }
+.turn-sub { font-size: 0.6rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+
+.hazard-row { display: flex; gap: 5px; flex: 1; justify-content: center; }
+.haz-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 5px 9px; border-radius: 9px;
+  border: 1.5px solid var(--ui-border);
+  background: rgba(255,255,255,0.04);
+  cursor: pointer; transition: all 0.13s;
+  font-size: 1.1rem; min-width: 50px;
+}
+.haz-btn span { font-size: 0.55rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+.haz-btn:hover { border-color: rgba(240,192,64,0.35); background: rgba(240,192,64,0.06); }
+.haz-btn.sel { border-color: var(--gold); background: rgba(240,192,64,0.12); }
+.haz-btn.sel span { color: var(--gold); }
+
+.power-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 72px; }
+.power-lbl { font-size: 0.58rem; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
+.power-track { width: 100%; height: 7px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+.power-fill { height: 100%; border-radius: 4px; transition: width 0.04s; }
+
+/* ── OVERLAY ─────────────────────────────────────── */
+.overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.82);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+}
+.overlay.hidden { display: none; }
+.ov-card {
+  background: var(--ui-panel);
+  border: 1.5px solid var(--ui-border-bright);
+  border-radius: 18px;
+  padding: 30px 32px;
+  max-width: 440px; width: 92%;
+  display: flex; flex-direction: column; gap: 12px;
+  text-align: center;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
+.ov-title { font-family: 'Fredoka', cursive; font-size: 1.7rem; color: var(--gold); }
+.ov-sub { font-size: 0.82rem; color: var(--text-dim); line-height: 1.6; }
+.scorecard { display: flex; flex-direction: column; gap: 4px; text-align: left; }
+.sc-row {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 11px; border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.85rem; font-weight: 500;
+}
+.sc-row.winner { background: rgba(240,192,64,0.1); border-color: rgba(240,192,64,0.25); }
+.sc-name { flex: 1; }
+.sc-diff { font-size: 0.72rem; color: var(--text-muted); min-width: 28px; }
+.sc-score { font-family: 'Fredoka', cursive; font-size: 1rem; min-width: 24px; text-align: right; }
+
+/* ── TOAST ───────────────────────────────────────── */
+.toast {
+  position: fixed;
+  top: 62px; left: 50%;
+  transform: translateX(-50%) translateY(-12px);
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-border-bright);
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-size: 0.82rem; font-weight: 500;
+  z-index: 999;
+  opacity: 0; pointer-events: none;
+  transition: all 0.28s;
+  white-space: nowrap;
+  max-width: 90vw;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── DISCONNECT ──────────────────────────────────── */
+.disc-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 900;
+  display: none;
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 14px;
+}
+.disc-overlay.show { display: flex; }
+
+/* ── SCROLLBAR ───────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ui-border); border-radius: 3px; }
+
+/* ── RESPONSIVE ──────────────────────────────────── */
+@media (max-width: 700px) {
+  #homeScreen { flex-direction: column; }
+  .home-left { padding: 28px 24px 16px; }
+  .home-right { width: 100%; padding: 16px 20px 24px; }
+  .logo-title { font-size: 2.8rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HOME ═══════════════ -->
+<div id="homeScreen" class="screen active">
+  <div class="home-left">
+    <div class="home-grass-art" id="grassArt"></div>
+    <div style="position:relative;z-index:2">
+      <div class="logo-eyebrow">Course No. 1 · Multiplayer</div>
+      <div class="logo-title">Sabotage<br>Golf</div>
+      <div class="logo-sub">Place traps · Putt through chaos</div>
+      <div class="home-taglines">
+        <div class="home-tagline">Up to 4 players online</div>
+        <div class="home-tagline">Place hazards before each hole</div>
+        <div class="home-tagline">Build & share custom courses</div>
+        <div class="home-tagline">Solo practice on any course</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="home-right">
+    <!-- Main menu -->
+    <div id="panelMain" class="panel">
+      <div class="panel-title">⛳ Play</div>
+      <button class="btn btn-primary btn-full" onclick="showHomePanel('panelHost')">🏌️ Host Game</button>
+      <button class="btn btn-secondary btn-full" onclick="showHomePanel('panelJoin')">🔗 Join Game</button>
+      <div class="divider"></div>
+      <button class="btn btn-secondary btn-full" onclick="showGallery()">🗺️ Browse Courses</button>
+      <button class="btn btn-secondary btn-full" onclick="showCreator()">✏️ Course Creator</button>
+    </div>
+
+    <!-- Host -->
+    <div id="panelHost" class="panel hidden">
+      <div class="panel-title">Host a Game</div>
+      <div class="field"><div class="field-label">Your Name</div>
+        <input class="input" id="hostName" placeholder="Chip Wedge" maxlength="16"></div>
+      <div class="field"><div class="field-label">Holes</div>
+        <select class="input" id="holeCount">
+          <option value="3">3 Holes — Quick</option>
+          <option value="6" selected>6 Holes — Standard</option>
+          <option value="9">9 Holes — Full Nine</option>
+        </select>
+      </div>
+      <div class="field"><div class="field-label">Course</div>
+        <select class="input" id="courseSelect">
+          <option value="builtin">Built-in Holes</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="hostGame()">Create Lobby →</button>
+      <button class="btn btn-secondary btn-full" onclick="showHomePanel('panelMain')">← Back</button>
+      <div class="status-msg" id="hostStatus"></div>
+    </div>
+
+    <!-- Lobby -->
+    <div id="panelLobby" class="panel hidden">
+      <div class="panel-title">Waiting for Players</div>
+      <div class="field-label" style="text-align:center">Share this code:</div>
+      <div class="code-display" id="lobbyCode">-----</div>
+      <div class="status-msg" id="lobbyStatus">Waiting…</div>
+      <div class="player-list" id="lobbyPlayers"></div>
+      <button class="btn btn-primary btn-full" id="startBtn" onclick="startGame()" disabled>Need 2+ players</button>
+      <button class="btn btn-danger btn-full btn-sm" onclick="cancelHost()">Cancel</button>
+    </div>
+
+    <!-- Join -->
+    <div id="panelJoin" class="panel hidden">
+      <div class="panel-title">Join a Game</div>
+      <div class="field"><div class="field-label">Your Name</div>
+        <input class="input" id="joinName" placeholder="Sandy Bunker" maxlength="16"></div>
+      <div class="field"><div class="field-label">Game Code</div>
+        <input class="input input-code" id="joinCode" placeholder="XXXXX" maxlength="6"></div>
+      <button class="btn btn-primary btn-full" onclick="joinGame()">Join →</button>
+      <button class="btn btn-secondary btn-full" onclick="showHomePanel('panelMain')">← Back</button>
+      <div class="status-msg" id="joinStatus"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ GALLERY ═══════════════ -->
+<div id="galleryScreen" class="screen">
+  <div class="gallery-header">
+    <button class="btn btn-secondary btn-sm" onclick="showScreen('homeScreen')">← Back</button>
+    <div class="gallery-title">🗺️ Course Gallery</div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-secondary btn-sm" onclick="loadGallery()">↺ Refresh</button>
+      <button class="btn btn-gold btn-sm" onclick="showCreator()">+ Create Course</button>
+    </div>
+  </div>
+  <div class="gallery-grid" id="galleryGrid">
+    <div class="gallery-empty">Loading courses…</div>
+  </div>
+</div>
+
+<!-- ═══════════════ CREATOR ═══════════════ -->
+<div id="creatorScreen" class="screen">
+  <div class="creator-header">
+    <div class="creator-title">✏️</div>
+    <input class="creator-name-input" id="courseName" placeholder="Course name…" maxlength="32">
+    <div class="tool-sep"></div>
+    <div class="tool-bar" id="toolBar">
+      <div class="tool-btn active" data-tool="fairway" onclick="setTool('fairway')">🟢<span>Fairway</span></div>
+      <div class="tool-btn" data-tool="rough" onclick="setTool('rough')">🌿<span>Rough</span></div>
+      <div class="tool-btn" data-tool="tee" onclick="setTool('tee')">🏌️<span>Tee</span></div>
+      <div class="tool-btn" data-tool="cup" onclick="setTool('cup')">⛳<span>Cup</span></div>
+      <div class="tool-btn" data-tool="wall" onclick="setTool('wall')">🧱<span>Wall</span></div>
+      <div class="tool-btn" data-tool="water" onclick="setTool('water')">💧<span>Water</span></div>
+      <div class="tool-btn" data-tool="bumper" onclick="setTool('bumper')">🔴<span>Bumper</span></div>
+      <div class="tool-btn" data-tool="windmill" onclick="setTool('windmill')">💨<span>Mill</span></div>
+      <div class="tool-btn" data-tool="boost" onclick="setTool('boost')">⚡<span>Boost</span></div>
+      <div class="tool-sep"></div>
+      <div class="tool-btn" onclick="clearCanvas()">🗑️<span>Clear</span></div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:6px;flex-shrink:0">
+      <button class="btn btn-secondary btn-sm" id="soloTestBtn" onclick="soloTestCourse()">▶ Test Solo</button>
+      <button class="btn btn-gold btn-sm" onclick="saveCourse()">💾 Save & Share</button>
+      <button class="btn btn-secondary btn-sm" onclick="showScreen('homeScreen')">✕</button>
+    </div>
+  </div>
+  <div class="creator-canvas-wrap">
+    <canvas id="creatorCanvas"></canvas>
+    <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);font-size:0.7rem;color:rgba(200,230,180,0.3);pointer-events:none;letter-spacing:1px;text-transform:uppercase" id="creatorHint">
+      Paint fairways · Place tee & cup · Add hazards
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ GAME ═══════════════ -->
+<div id="gameScreen" class="screen">
+  <div class="top-hud">
+    <div class="hud-logo">⛳</div>
+    <div class="hud-center">
+      <div class="hud-hole" id="hudHole">Hole 1</div>
+      <div class="hud-phase" id="hudPhase">Placement</div>
+    </div>
+    <div class="hud-scores" id="hudScores"></div>
+  </div>
+
+  <div class="game-canvas-wrap">
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="overlay hidden" id="ovHoleEnd">
+      <div class="ov-card">
+        <div class="ov-title" id="ovHoleTitle">Hole Complete!</div>
+        <div class="ov-sub" id="ovHoleSub"></div>
+        <div class="scorecard" id="ovHoleScores"></div>
+        <button class="btn btn-primary btn-full" id="ovNextBtn" onclick="nextHole()">Next Hole →</button>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="ovGameEnd">
+      <div class="ov-card">
+        <div class="ov-title">🏆 Round Complete!</div>
+        <div class="ov-sub" id="ovGameSub"></div>
+        <div class="scorecard" id="ovGameScores"></div>
+        <div style="display:flex;gap:8px;flex-direction:column">
+          <button class="btn btn-gold btn-full" onclick="playAgain()">↺ Play Again (same group)</button>
+          <button class="btn btn-secondary btn-full" onclick="leaveGame()">🏠 Back to Menu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-hud" id="bottomHud">
+    <div class="turn-block">
+      <div class="turn-dot" id="turnDot"></div>
+      <div class="turn-info">
+        <div class="turn-name" id="turnName">—</div>
+        <div class="turn-sub" id="turnSub">—</div>
+      </div>
+    </div>
+    <div class="hazard-row" id="hazardRow">
+      <div class="haz-btn" id="hbWall"     onclick="selectHaz('wall')">🧱<span>Wall</span></div>
+      <div class="haz-btn" id="hbWater"    onclick="selectHaz('water')">💧<span>Water</span></div>
+      <div class="haz-btn" id="hbWindmill" onclick="selectHaz('windmill')">💨<span>Mill</span></div>
+      <div class="haz-btn" id="hbBumper"   onclick="selectHaz('bumper')">🔴<span>Bumper</span></div>
+      <div class="haz-btn" id="hbBoost"    onclick="selectHaz('boost')">⚡<span>Boost</span></div>
+    </div>
+    <div class="power-wrap" id="powerWrap" style="display:none">
+      <div class="power-lbl">Power</div>
+      <div class="power-track"><div class="power-fill" id="powerFill" style="width:0%;background:#5cb84f"></div></div>
+    </div>
+    <div style="flex-shrink:0">
+      <button class="btn btn-gold btn-sm" id="placeBtn" onclick="confirmPlace()" style="display:none">Place ✓</button>
+      <button class="btn btn-primary btn-sm" id="soloRollBtn" onclick="soloNextTurn()" style="display:none">Next Turn →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Disconnect -->
+<div class="disc-overlay" id="discOverlay">
+  <div style="font-size:2.5rem">📡</div>
+  <div style="font-family:'Fredoka',cursive;font-size:1.4rem;color:var(--gold)">Connection Lost</div>
+  <div style="color:var(--text-dim);font-size:0.85rem">A player has disconnected.</div>
+  <button class="btn btn-primary" onclick="leaveGame()">Return to Menu</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════ FIREBASE ═══════════════ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getDatabase, ref, set, get, update, onValue, off,
+  push, remove, onDisconnect, serverTimestamp, query, orderByChild, limitToLast
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const FB = {
+  apiKey: "AIzaSyDtn2_EahamO93I_Fw8mFMi3LQXYjWrJ4k",
+  authDomain: "sabatoge-golf.firebaseapp.com",
+  databaseURL: "https://sabatoge-golf-default-rtdb.firebaseio.com",
+  projectId: "sabatoge-golf",
+  storageBucket: "sabatoge-golf.firebasestorage.app",
+  messagingSenderId: "537894122947",
+  appId: "1:537894122947:web:fdd4c417e92c8f2d377976"
+};
+const app = initializeApp(FB);
+const db  = getDatabase(app);
+
+// ── CONSTANTS ───────────────────────────────────────
+const P_COLORS = ['#e84040','#3a8fdf','#f0a020','#9060e0'];
+const PAR = 4, MAX_STROKES = 8;
+const BUILT_IN_HOLES = [
+  { name:'The Opener', tee:[0.12,0.5], cup:[0.86,0.5], fairway:[{x:0.08,y:0.34,w:0.82,h:0.32}], water:[], walls:[], objects:[] },
+  { name:'The Corner', tee:[0.12,0.2], cup:[0.84,0.76], fairway:[{x:0.08,y:0.1,w:0.28,h:0.28},{x:0.08,y:0.1,w:0.1,h:0.74},{x:0.08,y:0.66,w:0.8,h:0.28}], water:[], walls:[], objects:[] },
+  { name:'Island Green', tee:[0.1,0.5], cup:[0.82,0.5], fairway:[{x:0.06,y:0.36,w:0.28,h:0.28},{x:0.72,y:0.26,w:0.22,h:0.48}], water:[{x:0.34,y:0.2,w:0.38,h:0.6,round:true}], walls:[], objects:[] },
+  { name:'The Snake', tee:[0.1,0.18], cup:[0.86,0.8], fairway:[{x:0.06,y:0.1,w:0.42,h:0.22},{x:0.36,y:0.1,w:0.14,h:0.54},{x:0.36,y:0.5,w:0.42,h:0.22},{x:0.64,y:0.5,w:0.14,h:0.42},{x:0.64,y:0.7,w:0.28,h:0.2}], water:[], walls:[], objects:[] },
+  { name:'The Gauntlet', tee:[0.1,0.5], cup:[0.88,0.5], fairway:[{x:0.06,y:0.42,w:0.86,h:0.16}], water:[], walls:[], objects:[] },
+  { name:'The Dogleg', tee:[0.1,0.5], cup:[0.86,0.18], fairway:[{x:0.06,y:0.38,w:0.5,h:0.24},{x:0.46,y:0.1,w:0.12,h:0.52}], water:[], walls:[], objects:[] },
+  { name:'Volcano', tee:[0.1,0.5], cup:[0.84,0.5], fairway:[{x:0.06,y:0.2,w:0.86,h:0.6}], water:[{x:0.42,y:0.38,w:0.16,h:0.24,round:true}], walls:[], objects:[] },
+  { name:'The Z', tee:[0.1,0.18], cup:[0.86,0.78], fairway:[{x:0.06,y:0.1,w:0.56,h:0.22},{x:0.5,y:0.1,w:0.12,h:0.66},{x:0.38,y:0.64,w:0.54,h:0.22}], water:[], walls:[], objects:[] },
+  { name:'The Finale', tee:[0.1,0.5], cup:[0.84,0.5], fairway:[{x:0.06,y:0.22,w:0.82,h:0.56}], water:[{x:0.36,y:0.4,w:0.1,h:0.2,round:true},{x:0.54,y:0.4,w:0.1,h:0.2,round:true}], walls:[], objects:[] },
+];
+
+// ── UTILITIES ───────────────────────────────────────
+function genCode() {
+  return Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.random()*32|0]).join('');
+}
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+window.showScreen = showScreen;
+function showHomePanel(id) {
+  ['panelMain','panelHost','panelLobby','panelJoin'].forEach(p =>
+    document.getElementById(p).classList.toggle('hidden', p !== id));
+}
+window.showHomePanel = showHomePanel;
+function toast(msg, col='#f0c040') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = col+'70';
+  t.classList.add('show');
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(() => t.classList.remove('show'), 2800);
+}
+function setStatus(id, msg, cls='') {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.className = 'status-msg ' + cls; }
+}
+function lighten(hex, a) {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgb(${Math.min(255,r+a)},${Math.min(255,g+a)},${Math.min(255,b+a)})`;
+}
+function ptSegDist(px,py,ax,ay,bx,by) {
+  const dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy;
+  const t=l2>0?Math.max(0,Math.min(1,((px-ax)*dx+(py-ay)*dy)/l2)):0;
+  return Math.hypot(px-(ax+t*dx),py-(ay+t*dy));
+}
+
+// ── HOME DECOR ──────────────────────────────────────
+(function() {
+  const el = document.getElementById('grassArt');
+  let html = '';
+  for (let i=0;i<80;i++) {
+    const h = 20+Math.random()*50, x = Math.random()*100;
+    const delay = Math.random()*2, dur = 1.5+Math.random()*1.5;
+    html += `<div style="position:absolute;bottom:0;left:${x}%;width:3px;height:${h}px;background:linear-gradient(180deg,#5cb84f,#2d5a20);border-radius:2px 2px 0 0;transform-origin:bottom;animation:sway ${dur}s ease-in-out ${delay}s infinite;opacity:${0.4+Math.random()*0.6}"></div>`;
+  }
+  el.innerHTML = html;
+  const style = document.createElement('style');
+  style.textContent = '@keyframes sway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}';
+  document.head.appendChild(style);
+
+  // Populate course select with gallery courses
+  loadCoursesForSelect();
+})();
+
+async function loadCoursesForSelect() {
+  try {
+    const snap = await get(ref(db, 'sgCourses'));
+    const sel = document.getElementById('courseSelect');
+    sel.innerHTML = '<option value="builtin">Built-in Holes</option>';
+    if (snap.exists()) {
+      const courses = snap.val();
+      Object.entries(courses).sort((a,b) => (b[1].created||0)-(a[1].created||0)).forEach(([id,c]) => {
+        const opt = document.createElement('option');
+        opt.value = id; opt.textContent = '🗺️ ' + c.name;
+        sel.appendChild(opt);
+      });
+    }
+  } catch(e) { console.warn('Course select load:', e); }
+}
+
+// ── GALLERY ─────────────────────────────────────────
+window.showGallery = async function() {
+  showScreen('galleryScreen');
+  loadGallery();
+};
+window.loadGallery = async function() {
+  const grid = document.getElementById('galleryGrid');
+  grid.innerHTML = '<div class="gallery-empty">Loading…</div>';
+  try {
+    const snap = await get(ref(db,'sgCourses'));
+    if (!snap.exists()) { grid.innerHTML = '<div class="gallery-empty">No courses yet. Be the first to create one!</div>'; return; }
+    const courses = Object.entries(snap.val())
+      .sort((a,b) => (b[1].created||0)-(a[1].created||0));
+    grid.innerHTML = '';
+    courses.forEach(([id,c]) => {
+      const card = document.createElement('div');
+      card.className = 'course-card';
+      const cvs = document.createElement('canvas');
+      cvs.className = 'course-canvas-preview';
+      cvs.width = 260; cvs.height = 150;
+      card.appendChild(cvs);
+      const body = document.createElement('div');
+      body.className = 'course-card-body';
+      const creator = c.creatorName || 'Anonymous';
+      const date = c.created ? new Date(c.created).toLocaleDateString() : '—';
+      body.innerHTML = `
+        <div class="course-card-name">${c.name || 'Untitled'}</div>
+        <div class="course-card-meta">
+          <span>By ${creator}</span>
+          <span>${date}</span>
+        </div>
+        <div class="course-card-actions">
+          <button class="btn btn-secondary btn-sm" style="flex:1" onclick="soloPlayCourse('${id}')">▶ Solo Play</button>
+          <button class="btn btn-primary btn-sm" style="flex:1" onclick="hostWithCourse('${id}')">Host Game</button>
+        </div>`;
+      const isOwner = localStorage.getItem('sgOwner_'+id) === 'true';
+      if (isOwner) {
+        body.innerHTML += `<div style="display:flex;gap:5px">
+          <button class="btn btn-secondary btn-sm" style="flex:1" onclick="editCourse('${id}')">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" style="flex:1" onclick="deleteCourse('${id}')">🗑️ Delete</button>
+        </div>`;
+      }
+      card.appendChild(body);
+      grid.appendChild(card);
+      // Draw preview after DOM insert
+      requestAnimationFrame(() => drawCoursePreview(cvs, c));
+    });
+  } catch(e) { grid.innerHTML = '<div class="gallery-empty">Failed to load. Check connection.</div>'; }
+};
+
+function drawCoursePreview(cvs, course) {
+  const ctx = cvs.getContext('2d');
+  const W = cvs.width, H = cvs.height;
+  ctx.fillStyle = '#2d5a20'; ctx.fillRect(0,0,W,H);
+  (course.fairwayPaint||[]).forEach(p => {
+    ctx.fillStyle='#5cb84f';
+    ctx.beginPath(); ctx.arc(p.x*W, p.y*H, p.r*Math.min(W,H), 0, Math.PI*2); ctx.fill();
+  });
+  (course.objects||[]).forEach(o => {
+    if (o.type==='water') { ctx.fillStyle='#2a7aaa'; ctx.beginPath(); ctx.arc(o.x*W,o.y*H,10,0,Math.PI*2); ctx.fill(); }
+    if (o.type==='wall') { ctx.strokeStyle='#8a7a5a'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(o.x1*W,o.y1*H); ctx.lineTo(o.x2*W,o.y2*H); ctx.stroke(); }
+  });
+  if (course.tee) { ctx.fillStyle='#e8d890'; ctx.beginPath(); ctx.arc(course.tee[0]*W,course.tee[1]*H,5,0,Math.PI*2); ctx.fill(); }
+  if (course.cup) { ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(course.cup[0]*W,course.cup[1]*H,5,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#e84040'; ctx.lineWidth=1.5; ctx.stroke(); }
+}
+
+window.deleteCourse = async function(id) {
+  if (!confirm('Delete this course?')) return;
+  await remove(ref(db,'sgCourses/'+id));
+  localStorage.removeItem('sgOwner_'+id);
+  toast('Course deleted','#e84040');
+  loadGallery();
+};
+
+window.editCourse = async function(id) {
+  const snap = await get(ref(db,'sgCourses/'+id));
+  if (!snap.exists()) return;
+  const c = snap.val();
+  showCreator(c, id);
+};
+
+window.hostWithCourse = function(id) {
+  showScreen('homeScreen');
+  showHomePanel('panelHost');
+  setTimeout(() => {
+    const sel = document.getElementById('courseSelect');
+    if (sel.querySelector(`option[value="${id}"]`)) sel.value = id;
+  }, 200);
+};
+
+// ── COURSE CREATOR ──────────────────────────────────
+let cCanvas, cCtx, cW, cH;
+let cTool = 'fairway';
+let cPainting = false;
+let cWallStart = null;
+let cDragStart = null;
+let cFairwayPaint = []; // [{x,y,r}] normalized
+let cObjects = [];      // [{type, ...coords normalized}]
+let cTee = null;        // [nx, ny]
+let cCup = null;        // [nx, ny]
+let cEditId = null;     // Firebase key if editing
+let cWillThrottleAnimFrame = null;
+
+window.showCreator = function(courseData, editId) {
+  showScreen('creatorScreen');
+  cEditId = editId || null;
+  if (!cCanvas) {
+    cCanvas = document.getElementById('creatorCanvas');
+    cCtx = cCanvas.getContext('2d');
+    resizeCreator();
+    window.addEventListener('resize', resizeCreator);
+    cCanvas.addEventListener('mousedown', cDown);
+    cCanvas.addEventListener('mousemove', cMove);
+    cCanvas.addEventListener('mouseup', cUp);
+    cCanvas.addEventListener('touchstart', e=>{e.preventDefault();cDown(e.touches[0]);},{passive:false});
+    cCanvas.addEventListener('touchmove', e=>{e.preventDefault();cMove(e.touches[0]);},{passive:false});
+    cCanvas.addEventListener('touchend', e=>{e.preventDefault();cUp(e.changedTouches[0]);},{passive:false});
+    requestAnimationFrame(creatorLoop);
+  } else {
+    resizeCreator();
+  }
+  if (courseData) {
+    document.getElementById('courseName').value = courseData.name || '';
+    cFairwayPaint = courseData.fairwayPaint || [];
+    cObjects = courseData.objects || [];
+    cTee = courseData.tee || null;
+    cCup = courseData.cup || null;
+  } else {
+    document.getElementById('courseName').value = '';
+    cFairwayPaint = []; cObjects = []; cTee = null; cCup = null;
+  }
+};
+
+function resizeCreator() {
+  if (!cCanvas) return;
+  const wrap = cCanvas.parentElement;
+  cW = wrap.clientWidth; cH = wrap.clientHeight;
+  cCanvas.width = cW; cCanvas.height = cH;
+}
+
+window.setTool = function(t) {
+  cTool = t;
+  document.querySelectorAll('.tool-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.tool === t));
+};
+
+window.clearCanvas = function() {
+  if (!confirm('Clear the course?')) return;
+  cFairwayPaint=[]; cObjects=[]; cTee=null; cCup=null;
+};
+
+function cGetPos(e) {
+  const r = cCanvas.getBoundingClientRect();
+  return { x:(e.clientX-r.left)/cW, y:(e.clientY-r.top)/cH };
+}
+
+function cDown(e) {
+  const p = cGetPos(e);
+  cPainting = true;
+  if (cTool==='fairway'||cTool==='rough') {
+    addFairwayPaint(p, cTool);
+  } else if (cTool==='tee') {
+    cTee = [p.x, p.y];
+  } else if (cTool==='cup') {
+    cCup = [p.x, p.y];
+  } else if (cTool==='wall') {
+    cWallStart = p;
+  } else if (cTool==='water'||cTool==='bumper'||cTool==='windmill'||cTool==='boost') {
+    cDragStart = p;
+  }
+}
+
+function cMove(e) {
+  if (!cPainting) return;
+  const p = cGetPos(e);
+  if (cTool==='fairway'||cTool==='rough') addFairwayPaint(p, cTool);
+}
+
+function cUp(e) {
+  if (!cPainting) { cPainting=false; return; }
+  const p = cGetPos(e);
+  if (cTool==='wall' && cWallStart) {
+    cObjects.push({type:'wall',x1:cWallStart.x,y1:cWallStart.y,x2:p.x,y2:p.y});
+    cWallStart = null;
+  } else if (cTool==='water' && cDragStart) {
+    const cx=(cDragStart.x+p.x)/2, cy=(cDragStart.y+p.y)/2;
+    const rx=Math.abs(p.x-cDragStart.x)/2+0.02, ry=Math.abs(p.y-cDragStart.y)/2+0.02;
+    cObjects.push({type:'water',x:cx,y:cy,rx,ry});
+    cDragStart=null;
+  } else if (['bumper','windmill','boost'].includes(cTool)) {
+    cObjects.push({type:cTool,x:p.x,y:p.y});
+    cDragStart=null;
+  }
+  cPainting=false;
+}
+
+function addFairwayPaint(p, type) {
+  cFairwayPaint.push({x:p.x,y:p.y,r:0.045,type:type||'fairway'});
+}
+
+function creatorLoop() {
+  drawCreator();
+  requestAnimationFrame(creatorLoop);
+}
+
+function drawCreator() {
+  if (!cCtx) return;
+  cCtx.fillStyle='#2d5a20'; cCtx.fillRect(0,0,cW,cH);
+  // Rough texture
+  cCtx.fillStyle='#245518';
+  for(let x=0;x<cW;x+=18) for(let y=0;y<cH;y+=18) if((x+y)%36===0) cCtx.fillRect(x,y,18,18);
+  // Fairway paint
+  cFairwayPaint.forEach(p => {
+    cCtx.fillStyle = p.type==='rough' ? '#245518' : '#5cb84f';
+    cCtx.beginPath(); cCtx.arc(p.x*cW, p.y*cH, p.r*Math.min(cW,cH), 0, Math.PI*2); cCtx.fill();
+  });
+  // Objects
+  cObjects.forEach(o => drawObjectOnCtx(cCtx,o,cW,cH,1,{},Date.now()*0.001));
+  // Wall preview
+  if (cTool==='wall' && cWallStart && cPainting) {
+    // just show a dot at start
+    cCtx.fillStyle='rgba(200,160,80,0.6)';
+    cCtx.beginPath(); cCtx.arc(cWallStart.x*cW, cWallStart.y*cH, 6, 0, Math.PI*2); cCtx.fill();
+  }
+  // Tee
+  if (cTee) {
+    cCtx.fillStyle='#e8d890'; cCtx.beginPath(); cCtx.arc(cTee[0]*cW,cTee[1]*cH,12,0,Math.PI*2); cCtx.fill();
+    cCtx.strokeStyle='#b8a040'; cCtx.lineWidth=2; cCtx.stroke();
+    cCtx.fillStyle='#8a7020'; cCtx.font='bold 8px DM Sans'; cCtx.textAlign='center'; cCtx.textBaseline='middle';
+    cCtx.fillText('TEE',cTee[0]*cW,cTee[1]*cH);
+  }
+  // Cup
+  if (cCup) {
+    cCtx.fillStyle='#6abf5a'; cCtx.beginPath(); cCtx.arc(cCup[0]*cW,cCup[1]*cH,24,0,Math.PI*2); cCtx.fill();
+    cCtx.fillStyle='#0d1a08'; cCtx.beginPath(); cCtx.arc(cCup[0]*cW,cCup[1]*cH,9,0,Math.PI*2); cCtx.fill();
+    cCtx.strokeStyle='rgba(255,255,255,0.2)'; cCtx.lineWidth=1; cCtx.stroke();
+    cCtx.strokeStyle='#b09020'; cCtx.lineWidth=2;
+    cCtx.beginPath(); cCtx.moveTo(cCup[0]*cW,cCup[1]*cH); cCtx.lineTo(cCup[0]*cW,cCup[1]*cH-28); cCtx.stroke();
+    cCtx.fillStyle='#e84040'; cCtx.beginPath(); cCtx.moveTo(cCup[0]*cW,cCup[1]*cH-28); cCtx.lineTo(cCup[0]*cW+14,cCup[1]*cH-20); cCtx.lineTo(cCup[0]*cW,cCup[1]*cH-13); cCtx.fill();
+  }
+  // Grid hint
+  cCtx.strokeStyle='rgba(255,255,255,0.04)'; cCtx.lineWidth=1;
+  for(let x=0;x<cW;x+=cW/12){cCtx.beginPath();cCtx.moveTo(x,0);cCtx.lineTo(x,cH);cCtx.stroke();}
+  for(let y=0;y<cH;y+=cH/8){cCtx.beginPath();cCtx.moveTo(0,y);cCtx.lineTo(cW,y);cCtx.stroke();}
+}
+
+window.saveCourse = async function() {
+  if (!cTee) { toast('Place a Tee first!','#e84040'); return; }
+  if (!cCup) { toast('Place a Cup first!','#e84040'); return; }
+  const name = document.getElementById('courseName').value.trim() || 'Untitled Course';
+  const creatorName = localStorage.getItem('sgCreatorName') || prompt('Your name for the gallery?', 'Anonymous') || 'Anonymous';
+  localStorage.setItem('sgCreatorName', creatorName);
+  const courseData = {
+    name, creatorName,
+    tee: cTee, cup: cCup,
+    fairwayPaint: cFairwayPaint,
+    objects: cObjects,
+    created: Date.now()
+  };
+  let saveRef;
+  if (cEditId) {
+    saveRef = ref(db,'sgCourses/'+cEditId);
+    await update(saveRef, courseData);
+    toast('Course updated! ✓','#5cb84f');
+  } else {
+    saveRef = push(ref(db,'sgCourses'));
+    await set(saveRef, courseData);
+    localStorage.setItem('sgOwner_'+saveRef.key, 'true');
+    cEditId = saveRef.key;
+    toast('Course saved! ✓','#5cb84f');
+  }
+  // Copy share URL
+  const url = window.location.origin + window.location.pathname + '?course=' + (cEditId || saveRef.key);
+  navigator.clipboard?.writeText(url).catch(()=>{});
+  toast('Share link copied to clipboard! 🔗','#5cb84f');
+  setTimeout(() => { loadCoursesForSelect(); }, 500);
+};
+
+window.soloTestCourse = function() {
+  if (!cTee) { toast('Place a Tee first!','#e84040'); return; }
+  if (!cCup) { toast('Place a Cup first!','#e84040'); return; }
+  const course = { name:'Test Course', tee:cTee, cup:cCup, fairwayPaint:cFairwayPaint, objects:cObjects };
+  startSoloGame(course);
+};
+
+window.soloPlayCourse = async function(id) {
+  const snap = await get(ref(db,'sgCourses/'+id));
+  if (!snap.exists()) { toast('Course not found','#e84040'); return; }
+  startSoloGame(snap.val());
+};
+
+// ── URL PARAM: direct course link ───────────────────
+(async function() {
+  const params = new URLSearchParams(window.location.search);
+  const cid = params.get('course');
+  if (cid) {
+    try {
+      const snap = await get(ref(db,'sgCourses/'+cid));
+      if (snap.exists()) {
+        toast('Loading shared course…','#5cb84f');
+        setTimeout(() => startSoloGame(snap.val()), 800);
+      }
+    } catch(e) { console.warn('URL course load:', e); }
+  }
+})();
+
+// ── MULTIPLAYER STATE ────────────────────────────────
+let myId=null, myIdx=-1, roomId=null, roomRef=null;
+let players=[], iHost=false, totalHoles=6;
+let customCourseData=null; // if playing a custom course
+
+// ── HOST ─────────────────────────────────────────────
+window.hostGame = async function() {
+  const name = (document.getElementById('hostName').value.trim()) || 'Host';
+  const holes = parseInt(document.getElementById('holeCount').value);
+  const courseVal = document.getElementById('courseSelect').value;
+  totalHoles = holes;
+  myId = 'p_'+Date.now()+'_'+(Math.random()*9999|0);
+  myIdx = 0; iHost = true;
+  roomId = genCode();
+  roomRef = ref(db,'sggames/'+roomId);
+  let courseId = courseVal === 'builtin' ? null : courseVal;
+  const scores = {}; scores[myId]={};
+  await set(roomRef,{
+    host:myId, totalHoles:holes, courseId,
+    status:'lobby', created:serverTimestamp(),
+    players:{[myId]:{name,index:0,connected:true}}, scores
+  });
+  onDisconnect(ref(db,`sggames/${roomId}/players/${myId}/connected`)).set(false);
+  document.getElementById('lobbyCode').textContent = roomId;
+  showHomePanel('panelLobby');
+  listenRoom();
+};
+
+window.joinGame = async function() {
+  const name = (document.getElementById('joinName').value.trim()) || 'Guest';
+  const code = document.getElementById('joinCode').value.trim().toUpperCase();
+  if (code.length < 4) { setStatus('joinStatus','Enter a valid code','err'); return; }
+  roomId = code; roomRef = ref(db,'sggames/'+roomId);
+  const snap = await get(roomRef);
+  if (!snap.exists()) { setStatus('joinStatus','Game not found','err'); return; }
+  const d = snap.val();
+  if (d.status!=='lobby') { setStatus('joinStatus','Game already started','err'); return; }
+  const existing = d.players ? Object.keys(d.players) : [];
+  if (existing.length>=4) { setStatus('joinStatus','Room is full','err'); return; }
+  myId='p_'+Date.now()+'_'+(Math.random()*9999|0);
+  myIdx=existing.length; iHost=false;
+  totalHoles=d.totalHoles||6;
+  const scores=d.scores||{}; scores[myId]={};
+  await update(ref(db,`sggames/${roomId}`),{
+    [`players/${myId}`]:{name,index:myIdx,connected:true}, scores
+  });
+  onDisconnect(ref(db,`sggames/${roomId}/players/${myId}/connected`)).set(false);
+  setStatus('joinStatus','Joined! Waiting for host…','ok');
+  document.getElementById('startBtn').style.display='none';
+  document.getElementById('lobbyCode').textContent=roomId;
+  showHomePanel('panelLobby');
+  listenRoom();
+};
+
+window.cancelHost = async function() {
+  if(roomRef) await remove(roomRef);
+  showHomePanel('panelMain');
+};
+
+function listenRoom() {
+  if(!roomRef) return;
+  onValue(roomRef, snap => {
+    if(!snap.exists()) { document.getElementById('discOverlay').classList.add('show'); return; }
+    const d = snap.val();
+    syncPlayers(d);
+    if(d.status==='lobby') { updateLobbyUI(d); return; }
+    if(d.status==='playing') {
+      if(!document.getElementById('gameScreen').classList.contains('active')) initGameScreen();
+      syncGameState(d);
+    }
+  });
+}
+
+function syncPlayers(d) {
+  if(!d.players) return;
+  players = Object.entries(d.players).map(([id,p])=>({id,...p})).sort((a,b)=>a.index-b.index)
+    .map(p=>({id:p.id,name:p.name,color:P_COLORS[p.index]||P_COLORS[0],index:p.index,connected:p.connected!==false}));
+  myIdx = players.findIndex(p=>p.id===myId);
+}
+
+function updateLobbyUI(d) {
+  const pl = document.getElementById('lobbyPlayers');
+  pl.innerHTML='';
+  players.forEach((p,i)=>{
+    const el=document.createElement('div'); el.className='player-entry';
+    el.innerHTML=`<div class="p-dot" style="background:${p.color}"></div><span>${p.name}</span>${i===0?'<span class="p-host-tag">HOST</span>':''}`;
+    pl.appendChild(el);
+  });
+  document.getElementById('lobbyStatus').textContent=`${players.length}/4 players`;
+  const btn=document.getElementById('startBtn');
+  if(iHost){
+    btn.style.display='';
+    btn.disabled=players.length<2;
+    btn.textContent=players.length<2?'Need 2+ players':`Start (${players.length} players) →`;
+  }
+}
+
+window.startGame = async function() {
+  if(!iHost) return;
+  const scores={}; players.forEach(p=>{scores[p.id]={};});
+  await update(roomRef,{status:'playing',currentHole:0,gamePhase:'placement',placementTurn:0,puttingTurn:0,hazards:null,scores});
+};
+
+// ── GAME ENGINE ──────────────────────────────────────
+let gCanvas, gCtx, gW, gH, gScale=1;
+let gPhase='placement', gPlacementTurn=0, gPuttingTurn=0;
+let gCurrentHole=0, gLastSyncedHole=-1;
+let gHazards=[], gWindAngles={};
+let gBalls=[], gBallInMotion=false;
+let gIsPulling=false, gDragStart=null, gPower=0;
+let gGhostPos=null, gSelHaz=null;
+let gRoomData={};
+let gAnimFrame=null, gLastT=0;
+let gFinishedThisHole=[];
+let isSoloMode=false;
+let soloHoleData=null; // for custom course solo play
+let soloStrokes=0;
+let gHoleTemplates=BUILT_IN_HOLES;
+
+function getHoleData(idx) {
+  if(isSoloMode && soloHoleData) return soloHoleData;
+  return gHoleTemplates[idx % gHoleTemplates.length];
+}
+
+function startSoloGame(course) {
+  isSoloMode=true; soloHoleData=null; gRoomData={};
+  players=[{id:'solo',name:'You',color:P_COLORS[0],index:0}];
+  myId='solo'; myIdx=0; totalHoles=1;
+  soloHoleData = normalizeCourse(course);
+  gCurrentHole=0; gLastSyncedHole=-1;
+  showScreen('gameScreen');
+  initGameScreen();
+  gPhase='placement'; gPlacementTurn=0; gPuttingTurn=0;
+  gHazards=[]; gWindAngles={};
+  resetBalls();
+  document.getElementById('ovHoleEnd').classList.add('hidden');
+  document.getElementById('ovGameEnd').classList.add('hidden');
+  updateHUD(); updateBottomHUD();
+  toast('Solo mode — place hazards then putt!','#5cb84f');
+}
+
+function normalizeCourse(c) {
+  // Convert creator course to game hole format
+  return {
+    name: c.name||'Custom',
+    tee: c.tee||[0.12,0.5],
+    cup: c.cup||[0.85,0.5],
+    fairwayPaint: c.fairwayPaint||[],
+    objects: c.objects||[],
+    isCustom: true
+  };
+}
+
+function initGameScreen() {
+  if(!gCanvas) {
+    gCanvas=document.getElementById('gameCanvas');
+    gCtx=gCanvas.getContext('2d');
+    gCanvas.addEventListener('mousemove',e=>{const r=gCanvas.getBoundingClientRect();gPointerMove(e.clientX-r.left,e.clientY-r.top);});
+    gCanvas.addEventListener('mousedown',e=>{const r=gCanvas.getBoundingClientRect();gPointerDown(e.clientX-r.left,e.clientY-r.top);});
+    gCanvas.addEventListener('mouseup',  e=>{const r=gCanvas.getBoundingClientRect();gPointerUp(e.clientX-r.left,e.clientY-r.top);});
+    gCanvas.addEventListener('touchmove', e=>{e.preventDefault();const r=gCanvas.getBoundingClientRect(),t=e.touches[0];gPointerMove(t.clientX-r.left,t.clientY-r.top);},{passive:false});
+    gCanvas.addEventListener('touchstart',e=>{e.preventDefault();const r=gCanvas.getBoundingClientRect(),t=e.touches[0];gPointerDown(t.clientX-r.left,t.clientY-r.top);},{passive:false});
+    gCanvas.addEventListener('touchend',  e=>{e.preventDefault();const r=gCanvas.getBoundingClientRect(),t=e.changedTouches[0];gPointerUp(t.clientX-r.left,t.clientY-r.top);},{passive:false});
+    window.addEventListener('resize',resizeGame);
+  }
+  resizeGame();
+  if(gAnimFrame) cancelAnimationFrame(gAnimFrame);
+  gLastT=0;
+  function loop(ts){
+    const dt=Math.min((ts-gLastT)/1000,0.05); gLastT=ts;
+    if(gPhase==='putting') updatePhysics(dt);
+    Object.keys(gWindAngles).forEach(k=>gWindAngles[k]+=0.022);
+    drawGame();
+    updateHUD(); updateBottomHUD();
+    gAnimFrame=requestAnimationFrame(loop);
+  }
+  gAnimFrame=requestAnimationFrame(loop);
+}
+
+function resizeGame() {
+  if(!gCanvas) return;
+  gW=gCanvas.parentElement.clientWidth;
+  gH=gCanvas.parentElement.clientHeight;
+  gCanvas.width=gW; gCanvas.height=gH;
+  gScale=Math.min(gW,gH)/600;
+  if(gBalls.length>0) gBalls.forEach(b=>b.r=8*gScale);
+}
+
+// ── SYNC FROM FIREBASE ───────────────────────────────
+function syncGameState(d) {
+  gRoomData=d;
+  totalHoles=d.totalHoles||6;
+  const nh=d.currentHole||0;
+  if(nh!==gLastSyncedHole) {
+    gLastSyncedHole=nh; gCurrentHole=nh;
+    gHazards=[]; gWindAngles=[]; gFinishedThisHole=[];
+    resetBalls();
+  }
+  gPhase=d.gamePhase||'placement';
+  gPlacementTurn=d.placementTurn||0;
+  gPuttingTurn=d.puttingTurn||0;
+  if(d.hazards) {
+    gHazards=Object.entries(d.hazards).map(([k,h])=>({...h,fbKey:k}));
+    gHazards.forEach(h=>{if(h.type==='windmill'&&gWindAngles[h.fbKey]===undefined)gWindAngles[h.fbKey]=Math.random()*Math.PI*2;});
+  } else { gHazards=[]; }
+  if(d.scores) players.forEach(p=>{p.scores=Object.values(d.scores[p.id]||{}).map(Number);});
+  if(d.gameOver) { showGameEnd(); return; }
+  if(d.holeResultReady===gCurrentHole && document.getElementById('ovHoleEnd').classList.contains('hidden')) showHoleEnd();
+  updateHUD(); updateBottomHUD();
+}
+
+function resetBalls() {
+  if(!gW||!gH) return;
+  const hole=getHoleData(gCurrentHole);
+  if(!hole) return;
+  gBalls=players.map(p=>({
+    playerId:p.id, name:p.name, color:p.color,
+    x:gW*hole.tee[0], y:gH*hole.tee[1],
+    vx:0,vy:0, r:8*gScale,
+    moving:false, finished:false, strokes:0
+  }));
+  gBallInMotion=false;
+}
+
+// ── POINTER HANDLERS ─────────────────────────────────
+function gPointerMove(mx,my) {
+  if(gPhase==='placement') {
+    if(isSoloMode?true:myIdx===(gPlacementTurn%players.length)) gGhostPos={x:mx,y:my};
+  } else if(gPhase==='putting'&&gIsPulling) {
+    const isMyTurn = isSoloMode ? true : players[gPuttingTurn]?.id===myId;
+    if(!isMyTurn) return;
+    const dx=gDragStart.x-mx, dy=gDragStart.y-my;
+    gPower=Math.min(Math.hypot(dx,dy)/110,1);
+    const f=document.getElementById('powerFill');
+    f.style.width=(gPower*100)+'%';
+    f.style.background=gPower<0.4?'#5cb84f':gPower<0.75?'#f0c040':'#e84040';
+  }
+}
+
+function gPointerDown(mx,my) {
+  if(gPhase==='placement') {
+    const myTurn=isSoloMode?true:myIdx===(gPlacementTurn%players.length);
+    if(myTurn&&gSelHaz) gGhostPos={x:mx,y:my};
+  } else if(gPhase==='putting') {
+    const isMyTurn=isSoloMode?true:players[gPuttingTurn]?.id===myId;
+    if(!isMyTurn||gBallInMotion) return;
+    const myBall=gBalls.find(b=>b.playerId===(isSoloMode?'solo':myId));
+    if(!myBall||myBall.finished) return;
+    gIsPulling=true; gDragStart={x:mx,y:my}; gPower=0;
+  }
+}
+
+function gPointerUp(mx,my) {
+  if(gPhase==='placement'&&gSelHaz&&gGhostPos) {
+    placeHazard(gGhostPos.x,gGhostPos.y,gSelHaz);
+    gGhostPos=null;
+  } else if(gPhase==='putting'&&gIsPulling) {
+    gIsPulling=false;
+    if(gPower>0.03) fireShot(mx,my);
+    gPower=0;
+    document.getElementById('powerFill').style.width='0%';
+  }
+}
+
+// ── HAZARD SELECT ────────────────────────────────────
+window.selectHaz = function(type) {
+  const myTurn=isSoloMode?true:myIdx===(gPlacementTurn%players.length);
+  if(!myTurn&&!isSoloMode) { toast('Not your turn!','#e84040'); return; }
+  gSelHaz=type;
+  ['Wall','Water','Windmill','Bumper','Boost'].forEach(h =>
+    document.getElementById('hb'+h).classList.toggle('sel', h.toLowerCase()===type));
+};
+window.selectHazard = window.selectHaz;
+
+async function placeHazard(mx,my,type) {
+  const myTurn=isSoloMode?true:myIdx===(gPlacementTurn%players.length);
+  if(!myTurn&&!isSoloMode) return;
+  const hole=getHoleData(gCurrentHole);
+  if(!hole) return;
+  const tx=gW*hole.tee[0], ty=gH*hole.tee[1];
+  const cx=gW*hole.cup[0], cy=gH*hole.cup[1];
+  if(Math.hypot(mx-tx,my-ty)<52||Math.hypot(mx-cx,my-cy)<52){toast('Too close to tee/cup!','#e84040');return;}
+  const h={type,x:mx/gW,y:my/gH,placedBy:myId,placedByName:players[myIdx]?.name||'P'+(myIdx+1)};
+  if(isSoloMode) {
+    h.fbKey='local_'+Date.now();
+    gHazards.push(h);
+    gGhostPos=null; gSelHaz=null;
+    // All hazards placed in solo after one (optional — just skip to putting)
+  } else {
+    const hRef=push(ref(db,`sggames/${roomId}/hazards`));
+    await set(hRef,{...h,fbKey:hRef.key});
+    const next=gPlacementTurn+1;
+    const done=next>=players.length;
+    await update(roomRef,{placementTurn:next,gamePhase:done?'putting':'placement',puttingTurn:0});
+    if(done) toast('All hazards placed! Tee off! 🏌️','#5cb84f');
+    else toast(`${players[next%players.length]?.name}'s turn to place`,'#f0c040');
+  }
+  updateBottomHUD();
+}
+
+window.confirmPlace = function() {
+  if(gGhostPos&&gSelHaz) placeHazard(gGhostPos.x,gGhostPos.y,gSelHaz);
+};
+
+// Solo: skip placement, go to putting
+window.soloNextTurn = function() {
+  if(gPhase==='placement') {
+    gPhase='putting'; gPuttingTurn=0; gSelHaz=null;
+    updateBottomHUD();
+    toast('Placement done! Now putt.','#5cb84f');
+  }
+};
+
+// ── SHOT ─────────────────────────────────────────────
+function fireShot(endX,endY) {
+  const isMyTurn=isSoloMode?true:players[gPuttingTurn]?.id===myId;
+  if(!isMyTurn) return;
+  const myBall=gBalls.find(b=>b.playerId===(isSoloMode?'solo':myId));
+  if(!myBall||myBall.finished||myBall.moving) return;
+  const dx=gDragStart.x-endX, dy=gDragStart.y-endY, d=Math.hypot(dx,dy);
+  if(d<5) return;
+  const spd=gPower*16;
+  myBall.vx=(dx/d)*spd; myBall.vy=(dy/d)*spd;
+  myBall.moving=true; myBall.strokes++;
+  gBallInMotion=true;
+  soloStrokes=myBall.strokes;
+  toast(`Stroke ${myBall.strokes}!`,'#f0f0e8');
+}
+
+// ── PHYSICS ──────────────────────────────────────────
+function updatePhysics(dt) {
+  const myBall=gBalls.find(b=>b.playerId===(isSoloMode?'solo':myId));
+  if(!myBall||!myBall.moving||myBall.finished) return;
+  const hole=getHoleData(gCurrentHole);
+  if(!hole) return;
+
+  const onFair=isOnFairway(myBall.x,myBall.y,hole);
+  myBall.vx*=onFair?0.988:0.968; myBall.vy*=onFair?0.988:0.968;
+  myBall.x+=myBall.vx; myBall.y+=myBall.vy;
+
+  // Bounds
+  if(myBall.x-myBall.r<0){myBall.x=myBall.r;myBall.vx=Math.abs(myBall.vx)*0.55;}
+  if(myBall.x+myBall.r>gW){myBall.x=gW-myBall.r;myBall.vx=-Math.abs(myBall.vx)*0.55;}
+  if(myBall.y-myBall.r<0){myBall.y=myBall.r;myBall.vy=Math.abs(myBall.vy)*0.55;}
+  if(myBall.y+myBall.r>gH){myBall.y=gH-myBall.r;myBall.vy=-Math.abs(myBall.vy)*0.55;}
+
+  // All hazards (builtin + placed)
+  const allHazards=[...gHazards, ...(hole.objects||[]).map(o=>({...o,fbKey:'builtin_'+o.type+'_'+o.x}))];
+  allHazards.forEach(h => collideHazard(myBall, h, hole));
+
+  // Cup check
+  const cx=gW*hole.cup[0], cy=gH*hole.cup[1];
+  if(Math.hypot(myBall.x-cx,myBall.y-cy)<13*gScale) {
+    myBall.vx=0;myBall.vy=0;myBall.x=cx;myBall.y=cy;
+    myBall.moving=false;myBall.finished=true;gBallInMotion=false;
+    toast(`⛳ Holed in ${myBall.strokes}!`,'#f0c040');
+    onBallDone(myBall,myBall.strokes); return;
+  }
+  // Stopped
+  if(Math.hypot(myBall.vx,myBall.vy)<0.12) {
+    myBall.vx=0;myBall.vy=0;myBall.moving=false;gBallInMotion=false;
+    if(myBall.strokes>=MAX_STROKES){myBall.finished=true;toast('Max strokes!','#e84040');onBallDone(myBall,MAX_STROKES);}
+  }
+}
+
+function isOnFairway(x,y,hole) {
+  const nx=x/gW, ny=y/gH;
+  if(hole.isCustom) {
+    return (hole.fairwayPaint||[]).some(p=>Math.hypot(nx-p.x,ny-p.y)<p.r&&p.type!=='rough');
+  }
+  return (hole.fairway||[]).some(f=>nx>f.x&&nx<f.x+f.w&&ny>f.y&&ny<f.y+f.h);
+}
+
+function collideHazard(ball, h, hole) {
+  const hx=h.x*gW, hy=h.y*gH;
+  const s=gScale;
+  if(h.type==='wall') {
+    const x1=h.x1*gW, y1=h.y1*gH, x2=h.x2*gW, y2=h.y2*gH;
+    const dist=ptSegDist(ball.x,ball.y,x1,y1,x2,y2);
+    if(dist<ball.r+5) {
+      const dx=x2-x1, dy=y2-y1, len=Math.hypot(dx,dy);
+      const nx=-dy/len, ny=dx/len;
+      const dot=ball.vx*nx+ball.vy*ny;
+      ball.vx-=2*dot*nx*0.65; ball.vy-=2*dot*ny*0.65;
+      ball.x+=nx*2; ball.y+=ny*2;
+    }
+  }
+  if(h.type==='bumper') {
+    const br=18*s;
+    const dx=ball.x-hx, dy=ball.y-hy, d=Math.hypot(dx,dy);
+    if(d<br+ball.r&&d>0){
+      const nx=dx/d, ny=dy/d;
+      ball.x=hx+nx*(br+ball.r+1); ball.y=hy+ny*(br+ball.r+1);
+      const dot=ball.vx*nx+ball.vy*ny;
+      ball.vx=(ball.vx-2*dot*nx)*1.15; ball.vy=(ball.vy-2*dot*ny)*1.15;
+    }
+  }
+  if(h.type==='windmill') {
+    const angle=gWindAngles[h.fbKey]||0, armLen=34*s;
+    for(let arm=0;arm<4;arm++){
+      const a=angle+arm*Math.PI/2;
+      const ax2=hx+Math.cos(a)*armLen, ay2=hy+Math.sin(a)*armLen;
+      const d=ptSegDist(ball.x,ball.y,hx,hy,ax2,ay2);
+      if(d<ball.r+5){
+        const nx=-Math.sin(a), ny=Math.cos(a);
+        const dot=ball.vx*nx+ball.vy*ny;
+        ball.vx-=2*dot*nx; ball.vy-=2*dot*ny;
+        ball.vx+=Math.cos(a)*4; ball.vy+=Math.sin(a)*4;
+      }
+    }
+  }
+  if(h.type==='water') {
+    let hit=false;
+    if(h.rx) { // ellipse
+      hit=((ball.x-hx)/h.rx/gW)**2+((ball.y-hy)/h.ry/gH)**2<1;
+    } else {
+      hit=Math.hypot(ball.x-hx,ball.y-hy)<28*s;
+    }
+    if(hit){
+      const hole2=getHoleData(gCurrentHole);
+      ball.vx=0;ball.vy=0;
+      ball.x=gW*hole2.tee[0]; ball.y=gH*hole2.tee[1];
+      ball.strokes+=2; gBallInMotion=false; ball.moving=false;
+      setTimeout(()=>{ball.moving=false;gBallInMotion=false;},50);
+      toast(`Water! +2 penalty 💧 (${ball.strokes} total)`,'#3a8fdf');
+    }
+  }
+  if(h.type==='boost') {
+    if(Math.abs(ball.x-hx)<22*s&&Math.abs(ball.y-hy)<22*s) {
+      const spd=Math.hypot(ball.vx,ball.vy);
+      if(spd>0.5){ball.vx*=1.04;ball.vy*=1.04;}
+    }
+  }
+}
+
+async function onBallDone(ball, strokes) {
+  gFinishedThisHole.push(ball.playerId);
+  if(isSoloMode) {
+    // Solo: show result immediately
+    setTimeout(showHoleEnd, 600);
+    return;
+  }
+  // Save score
+  await update(ref(db,`sggames/${roomId}/scores/${ball.playerId}`),{[gCurrentHole]:strokes});
+  // Find next unfinished player
+  let next=gPuttingTurn+1;
+  while(next<players.length){
+    const b=gBalls.find(b2=>b2.playerId===players[next]?.id);
+    if(!b?.finished) break;
+    next++;
+  }
+  if(next>=players.length) {
+    if(iHost) await update(roomRef,{gamePhase:'result',holeResultReady:gCurrentHole});
+  } else {
+    if(iHost) await update(roomRef,{puttingTurn:next});
+    toast(`${players[next]?.name}'s turn to putt`,'#f0c040');
+  }
+}
+
+// ── HUD ──────────────────────────────────────────────
+function updateHUD() {
+  const hole=getHoleData(gCurrentHole);
+  const holeName=hole?.name||'Custom';
+  document.getElementById('hudHole').textContent=`Hole ${gCurrentHole+1}${isSoloMode?'':` of ${totalHoles}`} — ${holeName}`;
+  const phMap={placement:'⛺ Place hazards',putting:'🏌️ Putting',result:'📋 Results'};
+  document.getElementById('hudPhase').textContent=phMap[gPhase]||gPhase;
+  const sc=document.getElementById('hudScores');
+  sc.innerHTML='';
+  players.forEach((p,i)=>{
+    const total=(p.scores||[]).reduce((a,b)=>a+b,0);
+    const pill=document.createElement('div');
+    const isActive=!isSoloMode&&((gPhase==='putting'&&gPuttingTurn===i)||(gPhase==='placement'&&gPlacementTurn%players.length===i));
+    pill.className='score-pill'+(p.id===myId?' mine':'')+(isActive?' mine':'');
+    pill.innerHTML=`<div class="score-dot" style="background:${p.color}"></div><span style="max-width:55px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.72rem">${p.name}</span><span class="score-num" style="color:${p.color};margin-left:3px">${isSoloMode?soloStrokes:total}</span>`;
+    sc.appendChild(pill);
+  });
+}
+
+function updateBottomHUD() {
+  const hazRow=document.getElementById('hazardRow');
+  const powerWrap=document.getElementById('powerWrap');
+  const placeBtn=document.getElementById('placeBtn');
+  const soloBtn=document.getElementById('soloRollBtn');
+  const turnDot=document.getElementById('turnDot');
+  const turnName=document.getElementById('turnName');
+  const turnSub=document.getElementById('turnSub');
+
+  if(gPhase==='placement') {
+    const activePlacer=isSoloMode?0:gPlacementTurn%players.length;
+    const ap=players[activePlacer];
+    if(!ap) return;
+    turnDot.style.background=ap.color;
+    turnName.textContent=ap.name;
+    const isMyTurn=isSoloMode||myIdx===activePlacer;
+    turnSub.textContent=isMyTurn?'Click to preview, Place ✓ to confirm':'Waiting to place…';
+    hazRow.style.display='flex';
+    powerWrap.style.display='none';
+    placeBtn.style.display=isMyTurn&&gSelHaz&&gGhostPos?'':'none';
+    soloBtn.style.display=isSoloMode?'':'none';
+    soloBtn.textContent='Skip to Putting →';
+    ['Wall','Water','Windmill','Bumper','Boost'].forEach(h =>
+      document.getElementById('hb'+h).classList.toggle('sel',gSelHaz===h.toLowerCase()));
+  } else if(gPhase==='putting') {
+    const ap=isSoloMode?players[0]:players[gPuttingTurn];
+    if(!ap) return;
+    turnDot.style.background=ap.color;
+    turnName.textContent=ap.name;
+    hazRow.style.display='none';
+    placeBtn.style.display='none';
+    soloBtn.style.display='none';
+    const isMyTurn=isSoloMode||ap.id===myId;
+    const myBall=gBalls.find(b=>b.playerId===(isSoloMode?'solo':myId));
+    if(isMyTurn&&myBall&&!myBall.finished&&!gBallInMotion) {
+      turnSub.textContent='Drag back from ball → release to shoot';
+      powerWrap.style.display='flex';
+    } else if(gBallInMotion) {
+      turnSub.textContent='Ball in motion…';
+      powerWrap.style.display='none';
+    } else {
+      turnSub.textContent='Watching…';
+      powerWrap.style.display='none';
+    }
+  }
+}
+
+// ── HOLE / GAME END ──────────────────────────────────
+function showHoleEnd() {
+  const hole=getHoleData(gCurrentHole);
+  const holePar=hole?.par||PAR;
+  document.getElementById('ovHoleTitle').textContent=`Hole ${gCurrentHole+1} Complete!`;
+  document.getElementById('ovHoleSub').textContent=`${hole?.name||'Custom'} — Par ${holePar}`;
+  const sc=document.getElementById('ovHoleScores');
+  sc.innerHTML='';
+  const sorted=[...players].map(p=>{
+    let s;
+    if(isSoloMode) s=gBalls.find(b=>b.playerId==='solo')?.strokes||MAX_STROKES;
+    else s=Number(gRoomData.scores?.[p.id]?.[gCurrentHole])||MAX_STROKES;
+    return {...p,hs:s};
+  }).sort((a,b)=>a.hs-b.hs);
+  sorted.forEach((p,rank)=>{
+    const diff=p.hs-holePar;
+    const ds=diff===0?'E':diff>0?'+'+diff:''+diff;
+    const el=document.createElement('div');
+    el.className='sc-row'+(rank===0?' winner':'');
+    el.innerHTML=`<div class="p-dot" style="background:${p.color}"></div><div class="sc-name">${p.name}</div><div class="sc-diff">${ds}</div><div class="sc-score" style="color:${p.color}">${p.hs}</div>`;
+    sc.appendChild(el);
+  });
+  const isLast=isSoloMode||(gCurrentHole>=totalHoles-1);
+  document.getElementById('ovNextBtn').textContent=isLast?'See Results →':'Next Hole →';
+  document.getElementById('ovHoleEnd').classList.remove('hidden');
+}
+
+window.nextHole = async function() {
+  document.getElementById('ovHoleEnd').classList.add('hidden');
+  const isLast=isSoloMode||(gCurrentHole>=totalHoles-1);
+  if(isLast) {
+    if(isSoloMode) { showGameEndSolo(); return; }
+    if(iHost) await update(roomRef,{gameOver:true});
+    showGameEnd(); return;
+  }
+  if(iHost) await update(roomRef,{
+    currentHole:gCurrentHole+1,gamePhase:'placement',
+    placementTurn:0,puttingTurn:0,hazards:null,holeResultReady:null
+  });
+};
+
+function showGameEndSolo() {
+  const myBall=gBalls.find(b=>b.playerId==='solo');
+  const total=myBall?.strokes||0;
+  document.getElementById('ovGameSub').textContent=`You finished in ${total} stroke${total!==1?'s':''}!`;
+  const sc=document.getElementById('ovGameScores');
+  sc.innerHTML=`<div class="sc-row winner"><div class="p-dot" style="background:${P_COLORS[0]}"></div><div class="sc-name">You</div><div class="sc-score" style="color:${P_COLORS[0]}">${total}</div></div>`;
+  document.getElementById('ovGameEnd').classList.remove('hidden');
+}
+
+function showGameEnd() {
+  const sorted=[...players].map(p=>{
+    const total=Object.values(gRoomData.scores?.[p.id]||{}).reduce((a,b)=>a+Number(b),0);
+    return {...p,total};
+  }).sort((a,b)=>a.total-b.total);
+  document.getElementById('ovGameSub').textContent=`${sorted[0]?.name} wins with ${sorted[0]?.total} total strokes!`;
+  const sc=document.getElementById('ovGameScores');
+  sc.innerHTML='';
+  sorted.forEach((p,rank)=>{
+    const el=document.createElement('div');
+    el.className='sc-row'+(rank===0?' winner':'');
+    el.innerHTML=`<div class="p-dot" style="background:${p.color}"></div><div class="sc-name">${rank===0?'🏆 ':''}${p.name}</div><div class="sc-score" style="color:${p.color}">${p.total}</div>`;
+    sc.appendChild(el);
+  });
+  document.getElementById('ovGameEnd').classList.remove('hidden');
+}
+
+// ── PLAY AGAIN ───────────────────────────────────────
+window.playAgain = async function() {
+  document.getElementById('ovGameEnd').classList.add('hidden');
+  if(isSoloMode) {
+    // Reset solo
+    gCurrentHole=0; gLastSyncedHole=-1;
+    gHazards=[]; gWindAngles={}; gFinishedThisHole=[];
+    soloStrokes=0;
+    gPhase='placement'; gPlacementTurn=0; gPuttingTurn=0;
+    gSelHaz=null; gGhostPos=null;
+    resetBalls();
+    updateHUD(); updateBottomHUD();
+    toast('New round started!','#5cb84f');
+    return;
+  }
+  // Multiplayer: reset same room
+  if(iHost) {
+    const scores={};
+    players.forEach(p=>{scores[p.id]={};});
+    await update(roomRef,{
+      currentHole:0,gamePhase:'placement',placementTurn:0,
+      puttingTurn:0,hazards:null,holeResultReady:null,
+      gameOver:null,scores
+    });
+    toast('New round started! Same group.','#5cb84f');
+  } else {
+    toast('Waiting for host to restart…','#f0c040');
+  }
+};
+
+window.leaveGame = function() {
+  if(gAnimFrame){cancelAnimationFrame(gAnimFrame);gAnimFrame=null;}
+  if(roomRef&&!isSoloMode) remove(roomRef);
+  isSoloMode=false; players=[];
+  document.getElementById('ovGameEnd').classList.add('hidden');
+  document.getElementById('ovHoleEnd').classList.add('hidden');
+  showScreen('homeScreen');
+  showHomePanel('panelMain');
+  loadCoursesForSelect();
+};
+
+// ── DRAW GAME ────────────────────────────────────────
+function drawGame() {
+  if(!gCtx||!gW||!gH) return;
+  const hole=getHoleData(gCurrentHole);
+  if(!hole) return;
+  const t=Date.now()*0.001;
+
+  // Base rough
+  gCtx.fillStyle='#2d5a20'; gCtx.fillRect(0,0,gW,gH);
+  gCtx.fillStyle='#245518';
+  for(let x=0;x<gW;x+=18)for(let y=0;y<gH;y+=18)if((x+y)%36===0)gCtx.fillRect(x,y,18,18);
+
+  // Fairway
+  if(hole.isCustom) {
+    (hole.fairwayPaint||[]).forEach(p=>{
+      gCtx.fillStyle=p.type==='rough'?'#245518':'#5cb84f';
+      gCtx.beginPath();gCtx.arc(p.x*gW,p.y*gH,p.r*Math.min(gW,gH),0,Math.PI*2);gCtx.fill();
+    });
+  } else {
+    (hole.fairway||[]).forEach(f=>{
+      gCtx.fillStyle='#5cb84f';
+      gCtx.beginPath();gCtx.roundRect(gW*f.x,gH*f.y,gW*f.w,gH*f.h,8*gScale);gCtx.fill();
+      gCtx.fillStyle='rgba(255,255,255,0.04)';
+      const sw=gW*f.w/6;for(let i=0;i<6;i+=2)gCtx.fillRect(gW*f.x+i*sw,gH*f.y,sw,gH*f.h);
+      gCtx.strokeStyle='#4a9e3a';gCtx.lineWidth=1.5;gCtx.stroke();
+    });
+    (hole.water||[]).forEach(w=>drawBuiltinWater(w,t));
+  }
+
+  // Objects from custom course
+  if(hole.isCustom)(hole.objects||[]).forEach(o=>drawObjectOnCtx(gCtx,o,gW,gH,gScale,gWindAngles,t));
+
+  // Template walls
+  (hole.walls||[]).forEach(w=>{
+    gCtx.strokeStyle='#8a7a5a';gCtx.lineWidth=6*gScale;gCtx.lineCap='round';
+    gCtx.beginPath();gCtx.moveTo(gW*w.x1,gH*w.y1);gCtx.lineTo(gW*w.x2,gH*w.y2);gCtx.stroke();
+  });
+
+  // Tee
+  const tx=gW*hole.tee[0],ty=gH*hole.tee[1];
+  gCtx.fillStyle='#ddd090';gCtx.beginPath();gCtx.arc(tx,ty,14*gScale,0,Math.PI*2);gCtx.fill();
+  gCtx.strokeStyle='#b8a040';gCtx.lineWidth=2*gScale;gCtx.stroke();
+  gCtx.fillStyle='#8a7020';gCtx.font=`bold ${8*gScale}px DM Sans`;gCtx.textAlign='center';gCtx.textBaseline='middle';
+  gCtx.fillText('TEE',tx,ty);
+
+  // Cup green + hole
+  const cx=gW*hole.cup[0],cy=gH*hole.cup[1];
+  gCtx.fillStyle='#6abf5a';gCtx.beginPath();gCtx.arc(cx,cy,30*gScale,0,Math.PI*2);gCtx.fill();
+  gCtx.strokeStyle='#4a9e3a';gCtx.lineWidth=2*gScale;gCtx.stroke();
+  gCtx.fillStyle='rgba(0,0,0,0.2)';gCtx.beginPath();gCtx.ellipse(cx,cy+2,9*gScale,4*gScale,0,0,Math.PI*2);gCtx.fill();
+  gCtx.fillStyle='#0d1a08';gCtx.beginPath();gCtx.arc(cx,cy,10*gScale,0,Math.PI*2);gCtx.fill();
+  gCtx.strokeStyle='rgba(255,255,255,0.2)';gCtx.lineWidth=1;gCtx.stroke();
+  gCtx.strokeStyle='#b09020';gCtx.lineWidth=2*gScale;
+  gCtx.beginPath();gCtx.moveTo(cx,cy);gCtx.lineTo(cx,cy-30*gScale);gCtx.stroke();
+  gCtx.fillStyle='#e84040';gCtx.beginPath();gCtx.moveTo(cx,cy-30*gScale);gCtx.lineTo(cx+14*gScale,cy-22*gScale);gCtx.lineTo(cx,cy-14*gScale);gCtx.fill();
+
+  // Placed hazards
+  gHazards.forEach(h=>drawObjectOnCtx(gCtx,h,gW,gH,gScale,gWindAngles,t));
+
+  // Ghost preview
+  if(gPhase==='placement'&&gGhostPos&&gSelHaz) {
+    gCtx.globalAlpha=0.52;
+    drawObjectOnCtx(gCtx,{type:gSelHaz,x:gGhostPos.x/gW,y:gGhostPos.y/gH,fbKey:'ghost'},gW,gH,gScale,{ghost:0},t);
+    gCtx.globalAlpha=1;
+  }
+
+  // Balls
+  gBalls.forEach(b=>{
+    if(b.finished&&!(b.x===cx&&b.y===cy)) return;
+    drawBall(gCtx,b,gScale);
+  });
+
+  // Aim line
+  if(gIsPulling&&gDragStart) {
+    const myBall=gBalls.find(b=>b.playerId===(isSoloMode?'solo':myId));
+    if(myBall&&!myBall.finished) {
+      const ax=myBall.x+(myBall.x-gDragStart.x)*0.6, ay=myBall.y+(myBall.y-gDragStart.y)*0.6;
+      gCtx.strokeStyle='rgba(255,255,255,0.32)';gCtx.lineWidth=1.5;gCtx.setLineDash([6,5]);
+      gCtx.beginPath();gCtx.moveTo(myBall.x,myBall.y);gCtx.lineTo(ax,ay);gCtx.stroke();
+      gCtx.setLineDash([]);
+      gCtx.strokeStyle=`rgba(240,192,64,${0.3+gPower*0.55})`;gCtx.lineWidth=1.5;
+      gCtx.beginPath();gCtx.arc(myBall.x,myBall.y,(10+gPower*20)*gScale,0,Math.PI*2);gCtx.stroke();
+    }
+  }
+
+  // Stroke counters above balls
+  gBalls.forEach(b=>{
+    if(b.finished) return;
+    const p=players.find(p2=>p2.id===b.playerId);if(!p)return;
+    gCtx.fillStyle='rgba(0,0,0,0.65)';
+    gCtx.beginPath();gCtx.roundRect(b.x-14,b.y-28,28,15,4);gCtx.fill();
+    gCtx.fillStyle=p.color;gCtx.font=`bold ${9*gScale}px DM Sans`;gCtx.textAlign='center';gCtx.textBaseline='middle';
+    gCtx.fillText(b.strokes,b.x,b.y-21);
+  });
+}
+
+function drawBuiltinWater(w,t) {
+  const x=gW*w.x, y=gH*w.y;
+  if(w.round) {
+    const rx=gW*(w.w||0.1)/2, ry=gH*(w.h||0.1)/2;
+    const cx2=x+rx, cy2=y+ry;
+    gCtx.fillStyle='#2a7aaa';gCtx.beginPath();gCtx.ellipse(cx2,cy2,rx,ry,0,0,Math.PI*2);gCtx.fill();
+    gCtx.strokeStyle='#1a5a8a';gCtx.lineWidth=2;gCtx.stroke();
+    gCtx.strokeStyle='rgba(255,255,255,0.18)';gCtx.lineWidth=1;
+    gCtx.beginPath();gCtx.ellipse(cx2+Math.sin(t)*4,cy2-ry*0.2,rx*0.5,ry*0.15,0,0,Math.PI*2);gCtx.stroke();
+  } else {
+    const ww=gW*w.w, wh=gH*w.h;
+    gCtx.fillStyle='#2a7aaa';gCtx.beginPath();gCtx.roundRect(x,y,ww,wh,8*gScale);gCtx.fill();
+    gCtx.strokeStyle='#1a5a8a';gCtx.lineWidth=2;gCtx.stroke();
+  }
+}
+
+// Shared object drawing (hazards + creator objects)
+function drawObjectOnCtx(ctx,o,W,H,scale,windAngles,t) {
+  const x=o.x*W, y=o.y*H, s=scale;
+  ctx.save();
+  switch(o.type) {
+    case 'wall': {
+      if(o.x1!==undefined) {
+        const x1=o.x1*W,y1=o.y1*H,x2=o.x2*W,y2=o.y2*H;
+        ctx.strokeStyle='#9a8a6a';ctx.lineWidth=8*s;ctx.lineCap='round';
+        ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+        ctx.strokeStyle='#6a5a3a';ctx.lineWidth=2*s;ctx.stroke();
+      } else {
+        const ww=65*s,wh=12*s;
+        ctx.fillStyle='#7a6a4a';ctx.beginPath();ctx.roundRect(x-ww/2,y-wh/2,ww,wh,3*s);ctx.fill();
+        ctx.strokeStyle='#4a3a20';ctx.lineWidth=1.5;ctx.stroke();
+      }
+      if(o.placedByName) drawLabel(ctx,x,y+10*s,o.placedByName);
+      break;
+    }
+    case 'water': {
+      if(o.rx) {
+        const rx=o.rx*W, ry=o.ry*H;
+        ctx.fillStyle='#2a7aaa';ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#1a5a8a';ctx.lineWidth=2;ctx.stroke();
+        ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=1;
+        ctx.beginPath();ctx.ellipse(x+Math.sin(t)*3,y-ry*0.2,rx*0.5,ry*0.15,0,0,Math.PI*2);ctx.stroke();
+      } else {
+        ctx.fillStyle='#2a7aaa';ctx.beginPath();ctx.arc(x,y,28*s,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#1a5a8a';ctx.lineWidth=2;ctx.stroke();
+        ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=1;
+        ctx.beginPath();ctx.ellipse(x,y-8*s,12*s,4*s,0,0,Math.PI*2);ctx.stroke();
+      }
+      if(o.placedByName) drawLabel(ctx,x,y+32*s,o.placedByName);
+      break;
+    }
+    case 'windmill': {
+      const angle=(windAngles&&windAngles[o.fbKey]!==undefined)?windAngles[o.fbKey]:(t*1.5);
+      const armLen=34*s;
+      ctx.fillStyle='#7a5a2a';ctx.beginPath();ctx.arc(x,y,9*s,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#4a3010';ctx.lineWidth=2;ctx.stroke();
+      for(let arm=0;arm<4;arm++){
+        const a=angle+arm*Math.PI/2;
+        ctx.strokeStyle='#c89040';ctx.lineWidth=5*s;ctx.lineCap='round';
+        ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*armLen,y+Math.sin(a)*armLen);ctx.stroke();
+        ctx.fillStyle='#e8c050';
+        ctx.beginPath();ctx.ellipse(x+Math.cos(a)*armLen,y+Math.sin(a)*armLen,7*s,3.5*s,a,0,Math.PI*2);ctx.fill();
+      }
+      ctx.fillStyle='#9a7a3a';ctx.beginPath();ctx.arc(x,y,5*s,0,Math.PI*2);ctx.fill();
+      if(o.placedByName) drawLabel(ctx,x,y+44*s,o.placedByName);
+      break;
+    }
+    case 'bumper': {
+      const br=18*s,pulse=0.86+Math.sin((t||0)*4)*0.14;
+      ctx.fillStyle='#e84040';ctx.beginPath();ctx.arc(x,y,br*pulse,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#ff7070';ctx.lineWidth=3;ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,0.4)';ctx.beginPath();ctx.arc(x-5*s,y-5*s,5*s,0,Math.PI*2);ctx.fill();
+      if(o.placedByName) drawLabel(ctx,x,y+22*s,o.placedByName);
+      break;
+    }
+    case 'boost': {
+      const ph=(t||0)*2;
+      ctx.strokeStyle='#f0c040';ctx.lineWidth=2.5*s;ctx.setLineDash([5,4]);
+      ctx.beginPath();ctx.arc(x,y,20*s,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='rgba(240,192,64,0.18)';ctx.beginPath();ctx.arc(x,y,20*s,0,Math.PI*2);ctx.fill();
+      ctx.font=`${13*s}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('⚡',x,y);
+      if(o.placedByName) drawLabel(ctx,x,y+26*s,o.placedByName);
+      break;
+    }
+  }
+  ctx.restore();
+}
+
+function drawLabel(ctx,x,y,name) {
+  ctx.font='7px DM Sans';
+  const tw=ctx.measureText(name).width;
+  ctx.fillStyle='rgba(0,0,0,0.55)';
+  ctx.beginPath();ctx.roundRect(x-tw/2-4,y,tw+8,12,3);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,0.5)';
+  ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(name,x,y+2);
+}
+
+function drawBall(ctx,ball,scale) {
+  const s=scale;
+  ctx.save();
+  ctx.fillStyle='rgba(0,0,0,0.22)';
+  ctx.beginPath();ctx.ellipse(ball.x+2,ball.y+3,ball.r*0.82,ball.r*0.4,0,0,Math.PI*2);ctx.fill();
+  const g=ctx.createRadialGradient(ball.x-2,ball.y-2,1,ball.x,ball.y,ball.r);
+  g.addColorStop(0,lighten(ball.color,50));g.addColorStop(1,ball.color);
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,0.38)';
+  ctx.beginPath();ctx.arc(ball.x-2*s,ball.y-2.5*s,ball.r*0.35,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+
+</script>
+</body>
+</html>
